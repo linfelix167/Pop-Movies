@@ -29,7 +29,7 @@ import static com.felix.popmovies.utilities.Constant.MOVIE_DB_BASE_URL;
 import static com.felix.popmovies.utilities.Constant.POPULARITY;
 import static com.felix.popmovies.utilities.Constant.TOP_RATED;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.OnItemClickListener {
 
     public static final String MOVIE = "movie";
     public static final String VOTE_AVERAGE = "vote_average";
