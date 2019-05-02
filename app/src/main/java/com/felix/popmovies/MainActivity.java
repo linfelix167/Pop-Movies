@@ -32,6 +32,7 @@ import static com.felix.popmovies.utilities.Constant.TOP_RATED;
 public class MainActivity extends AppCompatActivity implements MovieAdapter.OnItemClickListener {
 
     public static final String MOVIE = "movie";
+    public static final String ID = "id";
     public static final String VOTE_AVERAGE = "vote_average";
     public static final String KEY_TITLE = "title";
     public static final String OVERVIEW = "overview";
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject result = jsonArray.getJSONObject(i);
 
+                                int id = result.getInt(ID);
                                 double voteAverage = result.getDouble(VOTE_AVERAGE);
                                 String title = result.getString(KEY_TITLE);
                                 String overView = result.getString(OVERVIEW);
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                                 String posterPath = result.getString(POSTER_PATH);
                                 String imageUrl = "https://image.tmdb.org/t/p/w185" + posterPath;
 
-                                mMovieList.add(new Movie(voteAverage, title, overView, releaseDate, imageUrl));
+                                mMovieList.add(new Movie(id, voteAverage, title, overView, releaseDate, imageUrl));
                             }
 
                             mMovieAdapter = new MovieAdapter(MainActivity.this, mMovieList);

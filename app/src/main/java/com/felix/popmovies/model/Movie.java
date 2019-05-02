@@ -1,9 +1,19 @@
 package com.felix.popmovies.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
+@Entity(tableName = "favorite_movie_table")
 public class Movie implements Parcelable {
+
+    @PrimaryKey
+    @NonNull
+    @ColumnInfo(name = "id")
+    private int id;
 
     private double voteAverage;
     private String title;
@@ -11,7 +21,8 @@ public class Movie implements Parcelable {
     private String releaseDate;
     private String imageUrl;
 
-    public Movie(double voteAverage, String title, String overview, String releaseDate, String imageUrl) {
+    public Movie(@NonNull int id, double voteAverage, String title, String overview, String releaseDate, String imageUrl) {
+        this.id = id;
         this.voteAverage = voteAverage;
         this.title = title;
         this.overview = overview;
@@ -20,6 +31,7 @@ public class Movie implements Parcelable {
     }
 
     protected Movie(Parcel in) {
+        id = in.readInt();
         voteAverage = in.readDouble();
         title = in.readString();
         overview = in.readString();
@@ -38,6 +50,10 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    public int getId() {
+        return id;
+    }
 
     public double getVoteAverage() {
         return voteAverage;
@@ -66,6 +82,7 @@ public class Movie implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
         dest.writeDouble(voteAverage);
         dest.writeString(title);
         dest.writeString(overview);
