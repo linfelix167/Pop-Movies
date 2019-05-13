@@ -7,6 +7,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
 
 
     private RecyclerView mRecyclerView;
+    private ProgressBar mProgressBar;
     private MovieAdapter mMovieAdapter;
     private List<Movie> mMovieList;
     private RequestQueue mRequestQueue;
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
 
         AutoFitGridLayoutManager layoutManager = new AutoFitGridLayoutManager(this, 500);
 
+        mProgressBar = findViewById(R.id.pogressBar);
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -89,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                             mRecyclerView.setAdapter(mMovieAdapter);
                             mMovieAdapter.notifyDataSetChanged();
                             mMovieAdapter.setOnItemClickListener(MainActivity.this);
+                            mProgressBar.setVisibility(View.INVISIBLE);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -116,11 +121,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         switch (id) {
             case R.id.sort_popular:
                 mMovieList.clear();
+                mProgressBar.setVisibility(View.VISIBLE);
                 parseJSON(MOVIE_DB_BASE_URL + POPULARITY + API_KEY);
                 mMovieAdapter.notifyDataSetChanged();
                 return true;
             case R.id.sort_rating:
                 mMovieList.clear();
+                mProgressBar.setVisibility(View.VISIBLE);
                 parseJSON(MOVIE_DB_BASE_URL + TOP_RATED + API_KEY);
                 mMovieAdapter.notifyDataSetChanged();
                 return true;
