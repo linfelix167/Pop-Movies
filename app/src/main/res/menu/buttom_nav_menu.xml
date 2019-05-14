@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_popular"
+        android:icon="@drawable/ic_movie_filter_black_24dp"
+        android:title="@string/pref_sort_popular_label"/>
+
+    <item
+        android:id="@+id/navigation_rating"
+        android:icon="@drawable/ic_timeline_black_24dp"
+        android:title="@string/pref_sort_rating_label"/>
+
+    <item
+        android:id="@+id/navigation_favorite"
+        android:icon="@drawable/ic_favorite_black_24dp"
+        android:title="@string/pref_sort_favorite_label"/>
+
+</menu>

@@ -1,6 +1,8 @@
 package com.felix.popmovies;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -59,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(layoutManager);
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         mMovieList = new ArrayList<>();
 
@@ -108,32 +112,30 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         mRequestQueue.add(request);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
-        return true;
-    }
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
-            case R.id.sort_popular:
-                mMovieList.clear();
-                mProgressBar.setVisibility(View.VISIBLE);
-                parseJSON(MOVIE_DB_BASE_URL + POPULARITY + API_KEY);
-                mMovieAdapter.notifyDataSetChanged();
-                return true;
-            case R.id.sort_rating:
-                mMovieList.clear();
-                mProgressBar.setVisibility(View.VISIBLE);
-                parseJSON(MOVIE_DB_BASE_URL + TOP_RATED + API_KEY);
-                mMovieAdapter.notifyDataSetChanged();
-                return true;
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.navigation_popular:
+                    mMovieList.clear();
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    parseJSON(MOVIE_DB_BASE_URL + POPULARITY + API_KEY);
+                    mMovieAdapter.notifyDataSetChanged();
+                    return true;
+                case R.id.navigation_rating:
+                    mMovieList.clear();
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    parseJSON(MOVIE_DB_BASE_URL + TOP_RATED + API_KEY);
+                    mMovieAdapter.notifyDataSetChanged();
+                    return true;
+                case R.id.navigation_favorite:
+                    return true;
+            }
+            return false;
         }
-        return super.onOptionsItemSelected(item);
-    }
+    };
 
     @Override
     public void onItemClick(int position) {
