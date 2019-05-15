@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     public static final String OVERVIEW = "overview";
     public static final String RELEASE_DATE = "release_date";
     public static final String POSTER_PATH = "poster_path";
+    public static final String BACKDROP_PATH = "backdrop_path";
 
 
     private RecyclerView mRecyclerView;
@@ -89,8 +90,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
 
                                 String posterPath = result.getString(POSTER_PATH);
                                 String imageUrl = "https://image.tmdb.org/t/p/w185" + posterPath;
+                                String backdropPath = result.getString(BACKDROP_PATH);
+                                String backdropImageUrl = "https://image.tmdb.org/t/p/w500" + backdropPath;
 
-                                mMovieList.add(new Movie(id, voteAverage, title, overView, releaseDate, imageUrl));
+                                mMovieList.add(new Movie(id, voteAverage, title, overView, releaseDate, imageUrl, backdropImageUrl));
                             }
 
                             mMovieAdapter = new MovieAdapter(MainActivity.this, mMovieList);

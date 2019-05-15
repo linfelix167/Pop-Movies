@@ -20,15 +20,18 @@ public class Movie implements Parcelable {
     private String overview;
     private String releaseDate;
     private String imageUrl;
+    private String backDropImageUrl;
 
-    public Movie(@NonNull int id, double voteAverage, String title, String overview, String releaseDate, String imageUrl) {
+    public Movie(@NonNull int id, double voteAverage, String title, String overview, String releaseDate, String imageUrl, String backDropImageUrl) {
         this.id = id;
         this.voteAverage = voteAverage;
         this.title = title;
         this.overview = overview;
         this.releaseDate = releaseDate;
         this.imageUrl = imageUrl;
+        this.backDropImageUrl = backDropImageUrl;
     }
+
 
     protected Movie(Parcel in) {
         id = in.readInt();
@@ -37,6 +40,7 @@ public class Movie implements Parcelable {
         overview = in.readString();
         releaseDate = in.readString();
         imageUrl = in.readString();
+        backDropImageUrl = in.readString();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -75,6 +79,10 @@ public class Movie implements Parcelable {
         return imageUrl;
     }
 
+    public String getBackDropImageUrl() {
+        return backDropImageUrl;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -88,5 +96,6 @@ public class Movie implements Parcelable {
         dest.writeString(overview);
         dest.writeString(releaseDate);
         dest.writeString(imageUrl);
+        dest.writeString(backDropImageUrl);
     }
 }
