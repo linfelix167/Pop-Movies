@@ -15,4 +15,6 @@
     <string name="reviews">Reviews</string>
     <string name="title_activity_movie_detail">MovieDetailActivity</string>
     <string name="title_activity_favorite">FavoriteActivity</string>
+    <string name="trailerPoster">Image of Trailer</string>
+    <string name="app_not_found">App not found on device</string>
 </resources>

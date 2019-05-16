@@ -11,4 +11,8 @@ public class Constant {
     public static final String POPULARITY = "popular?";
 
     public static final String TOP_RATED = "top_rated?";
+
+    public static final String YOUTUBE_TUMBNAIL_URL = "https://img.youtube.com/vi/";
+
+    public static String YOUTUBE_URL = "http://www.youtube.com/watch?v=";
 }
