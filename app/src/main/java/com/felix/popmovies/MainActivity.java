@@ -1,7 +1,10 @@
 package com.felix.popmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.felix.popmovies.adapter.MovieAdapter;
 import com.felix.popmovies.model.Movie;
+import com.felix.popmovies.persistence.MovieViewModel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,24 +48,26 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     public static final String POSTER_PATH = "poster_path";
     public static final String BACKDROP_PATH = "backdrop_path";
 
-
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;
     private MovieAdapter mMovieAdapter;
     private List<Movie> mMovieList;
     private RequestQueue mRequestQueue;
+    private MovieViewModel mMovieViewModel;
+    private AutoFitGridLayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AutoFitGridLayoutManager layoutManager = new AutoFitGridLayoutManager(this, 500);
+        layoutManager = new AutoFitGridLayoutManager(this, 500);
 
         mProgressBar = findViewById(R.id.pogressBar);
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(layoutManager);
+
         BottomNavigationView navView = findViewById(R.id.nav_view);
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
@@ -115,6 +121,17 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         mRequestQueue.add(request);
     }
 
+    private void parseFromDatabase() {
+        mMovieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
+
+        mMovieViewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+
+            }
+        });
+    }
+
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -134,6 +151,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                     mMovieAdapter.notifyDataSetChanged();
                     return true;
                 case R.id.navigation_favorite:
+                    mMovieList.clear();
+                    mProgressBar.setVisibility(View.VISIBLE);
+
+                    mMovieAdapter.notifyDataSetChanged();
                     return true;
             }
             return false;

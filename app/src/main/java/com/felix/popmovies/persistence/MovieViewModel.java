@@ -11,6 +11,7 @@ import java.util.List;
 public class MovieViewModel extends AndroidViewModel {
 
     private MovieRepository repository;
+
     private LiveData<List<Movie>> favoriteMovies;
 
     public MovieViewModel(Application application) {
@@ -19,11 +20,15 @@ public class MovieViewModel extends AndroidViewModel {
         favoriteMovies = repository.getFavoriteMovies();
     }
 
-    LiveData<List<Movie>> getFavoriteMovies() {
+    public LiveData<List<Movie>> getFavoriteMovies() {
         return favoriteMovies;
     }
 
     public void insert(Movie movie) {
         repository.insert(movie);
+    }
+
+    public void delete(Movie movie) {
+        repository.delete(movie);
     }
 }

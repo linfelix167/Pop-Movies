@@ -31,6 +31,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <CheckBox
+                android:id="@+id/favorite_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:button="@drawable/checkbox_selector"
+                app:layout_constraintTop_toTopOf="@id/year_text_view_detail"
+                app:layout_constraintStart_toEndOf="@id/year_text_view_detail"
+                app:layout_constraintBaseline_toBaselineOf="@id/year_text_view_detail"/>
+
             <TextView
                 android:id="@+id/rating_text_view_detail"
                 android:layout_width="wrap_content"

@@ -15,12 +15,25 @@ public class Movie implements Parcelable {
     @ColumnInfo(name = "id")
     private int id;
 
+    @ColumnInfo(name = "vote_average")
     private double voteAverage;
+
+    @ColumnInfo(name = "title")
     private String title;
+
+    @ColumnInfo(name = "overview")
     private String overview;
+
+    @ColumnInfo(name = "release_date")
     private String releaseDate;
+
+    @ColumnInfo(name = "image_url")
     private String imageUrl;
+
+    @ColumnInfo(name = "back_drop_image_url")
     private String backDropImageUrl;
+
+    private boolean isFavorite;
 
     public Movie(@NonNull int id, double voteAverage, String title, String overview, String releaseDate, String imageUrl, String backDropImageUrl) {
         this.id = id;
@@ -81,6 +94,14 @@ public class Movie implements Parcelable {
 
     public String getBackDropImageUrl() {
         return backDropImageUrl;
+    }
+
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
     }
 
     @Override

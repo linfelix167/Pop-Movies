@@ -2,14 +2,18 @@ package com.felix.popmovies;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
@@ -56,6 +60,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private TextView mYearTextView;
     private TextView mRatingTextView;
     private TextView mOverviewTextView;
+    private CheckBox mFavoriteCheckBox;
     private FloatingActionButton fab;
     private RecyclerView recyclerViewReviews;
     private RecyclerView recyclerViewTrailers;
@@ -64,8 +69,6 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private ArrayList<Review> reviews;
     private ArrayList<Trailer> trailers;
     private RequestQueue mRequestQueue;
-
-    boolean isFavorite = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +85,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         mYearTextView = findViewById(R.id.year_text_view_detail);
         mRatingTextView = findViewById(R.id.rating_text_view_detail);
         mOverviewTextView = findViewById(R.id.overview_text_view_detail);
+        mFavoriteCheckBox = findViewById(R.id.favorite_checkbox);
 
         Picasso.get().load(movie.getBackDropImageUrl()).fit().centerInside().into(mImageView);
 
@@ -103,22 +107,12 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         trailers = new ArrayList<>();
 
         fab = findViewById(R.id.fab);
-        fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_border_white_24dp));
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isFavorite) {
-                    fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_white_24dp));
-                    isFavorite = false;
-                    Snackbar.make(v, "Movie saved as favorite", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                } else {
-                    fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_border_white_24dp));
-                    isFavorite = true;
-                    Snackbar.make(v, "Remove movie from favorite", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
+                Intent shareIntent = createShareMovieIntent();
+                startActivity(shareIntent);
             }
         });
 
@@ -202,6 +196,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         mRequestQueue.add(request);
     }
 
+
     @Override
     public void onItemClick(int position) {
         Trailer trailer = trailers.get(position);
@@ -218,5 +213,17 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
                 Toast.makeText(this, getString(R.string.app_not_found), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private Intent createShareMovieIntent() {
+        Trailer trailer = trailers.get(0);
+        String shareMessage = "Hey! I have a new movie trailer want ot share with you!\n"
+                + "https://www.youtube.com/watch?v=" + trailer.getKey();
+        Intent shareIntent =ShareCompat.IntentBuilder.from(this)
+                .setType("text/plain")
+                .setText(shareMessage)
+                .getIntent();
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        return shareIntent;
     }
 }
