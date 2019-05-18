@@ -32,6 +32,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.felix.popmovies.MovieDetailActivity.EXTRA_REPLY;
 import static com.felix.popmovies.utilities.Constant.API_KEY;
 import static com.felix.popmovies.utilities.Constant.MOVIE_DB_BASE_URL;
 import static com.felix.popmovies.utilities.Constant.POPULARITY;
@@ -53,8 +54,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     private MovieAdapter mMovieAdapter;
     private List<Movie> mMovieList;
     private RequestQueue mRequestQueue;
-    private MovieViewModel mMovieViewModel;
     private AutoFitGridLayoutManager layoutManager;
+    private MovieViewModel mMovieViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
 
         mRequestQueue = Volley.newRequestQueue(this);
         parseJSON(MOVIE_DB_BASE_URL + POPULARITY + API_KEY);
+
+        mMovieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
     }
 
     private void parseJSON(String url) {
@@ -122,12 +125,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     }
 
     private void parseFromDatabase() {
-        mMovieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
-
         mMovieViewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
-
+                mMovieAdapter = new MovieAdapter(MainActivity.this, mMovieList);
+//                mMovieAdapter.setOnItemClickListener(MainActivity.this);
+                mMovieAdapter.setFavoriteMovies(movies);
+                mRecyclerView.setAdapter(mMovieAdapter);
+                mProgressBar.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -153,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                 case R.id.navigation_favorite:
                     mMovieList.clear();
                     mProgressBar.setVisibility(View.VISIBLE);
-
+                    parseFromDatabase();
                     mMovieAdapter.notifyDataSetChanged();
                     return true;
             }

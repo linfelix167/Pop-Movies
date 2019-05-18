@@ -1,7 +1,10 @@
 package com.felix.popmovies;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -30,6 +33,8 @@ import com.felix.popmovies.adapter.TrailersAdapter;
 import com.felix.popmovies.model.Movie;
 import com.felix.popmovies.model.Review;
 import com.felix.popmovies.model.Trailer;
+import com.felix.popmovies.persistence.MovieRoomDatabase;
+import com.felix.popmovies.persistence.MovieViewModel;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -46,6 +51,8 @@ import static com.felix.popmovies.utilities.Constant.YOUTUBE_URL;
 
 public class MovieDetailActivity extends AppCompatActivity implements TrailersAdapter.OnItemClickListener {
 
+    public static final String EXTRA_REPLY = "com.example.android.roomwordssample.REPLY";
+
     public static final String REVIEWS = "reviews";
     public static final String VIDEOS = "videos";
     public static final String AUTHOR = "author";
@@ -60,7 +67,6 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private TextView mYearTextView;
     private TextView mRatingTextView;
     private TextView mOverviewTextView;
-    private CheckBox mFavoriteCheckBox;
     private FloatingActionButton fab;
     private RecyclerView recyclerViewReviews;
     private RecyclerView recyclerViewTrailers;
@@ -69,6 +75,9 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private ArrayList<Review> reviews;
     private ArrayList<Trailer> trailers;
     private RequestQueue mRequestQueue;
+
+    private MovieRoomDatabase mDb;
+    private MovieViewModel mMovieViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,13 +88,12 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
 
         Intent intent = getIntent();
 
-        Movie movie = intent.getParcelableExtra(MOVIE);
+        final Movie movie = intent.getParcelableExtra(MOVIE);
 
         mImageView = findViewById(R.id.image_view_detail);
         mYearTextView = findViewById(R.id.year_text_view_detail);
         mRatingTextView = findViewById(R.id.rating_text_view_detail);
         mOverviewTextView = findViewById(R.id.overview_text_view_detail);
-        mFavoriteCheckBox = findViewById(R.id.favorite_checkbox);
 
         Picasso.get().load(movie.getBackDropImageUrl()).fit().centerInside().into(mImageView);
 
@@ -109,6 +117,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         fab = findViewById(R.id.fab);
 
         fab.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
                 Intent shareIntent = createShareMovieIntent();
@@ -122,6 +131,25 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         String trailersUrl = MOVIE_DB_BASE_URL + movie.getId() + "/" + VIDEOS + "?" + API_KEY;
         parseReviewsJSON(reviewsUrl);
         parseTrailersJSON(trailersUrl);
+
+        mDb = MovieRoomDatabase.getDatabase(getApplicationContext());
+        mMovieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
+
+        final CheckBox mFavoriteCheckBox = findViewById(R.id.favorite_checkbox);
+
+        mFavoriteCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Intent replayIntent = new Intent();
+//                replayIntent.putExtra(EXTRA_REPLY, movie);
+//                movie.setFavorite(true);
+//                setResult(RESULT_OK, replayIntent);
+//                Snackbar.make(v, "Movie saved as favorite", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                mMovieViewModel.insert(movie);
+                movie.setFavorite(true);
+            }
+        });
     }
 
     private void parseReviewsJSON(String url) {
@@ -215,6 +243,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private Intent createShareMovieIntent() {
         Trailer trailer = trailers.get(0);
         String shareMessage = "Hey! I have a new movie trailer want ot share with you!\n"
