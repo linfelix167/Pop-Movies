@@ -33,6 +33,7 @@ import com.felix.popmovies.model.Review;
 import com.felix.popmovies.model.Trailer;
 import com.felix.popmovies.persistence.MovieRoomDatabase;
 import com.felix.popmovies.persistence.MovieViewModel;
+import com.felix.popmovies.utilities.AppExecutors;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -47,8 +48,6 @@ import static com.felix.popmovies.utilities.Constant.MOVIE_DB_BASE_URL;
 import static com.felix.popmovies.utilities.Constant.YOUTUBE_URL;
 
 public class MovieDetailActivity extends AppCompatActivity implements TrailersAdapter.OnItemClickListener {
-
-    public static final String EXTRA_REPLY = "com.example.android.roomwordssample.REPLY";
 
     public static final String REVIEWS = "reviews";
     public static final String VIDEOS = "videos";
@@ -75,6 +74,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private RequestQueue mRequestQueue;
     private Movie currentMovie;
 
+    private MovieRoomDatabase mDb;
     private MovieViewModel mMovieViewModel;
     private Boolean isFavorite = false;
 
@@ -86,34 +86,13 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         setSupportActionBar(toolbar);
 
         Intent intent = getIntent();
-
         currentMovie = intent.getParcelableExtra(MOVIE);
-
-        mImageView = findViewById(R.id.image_view_detail);
-        mYearTextView = findViewById(R.id.year_text_view_detail);
-        mRatingTextView = findViewById(R.id.rating_text_view_detail);
-        mOverviewTextView = findViewById(R.id.overview_text_view_detail);
-
-        Picasso.get().load(currentMovie.getBackDropImageUrl()).fit().centerInside().into(mImageView);
-
-        this.setTitle(currentMovie.getTitle());
-        mYearTextView.setText(currentMovie.getReleaseDate());
-        String ratingString = currentMovie.getVoteAverage() + "/10";
-        mRatingTextView.setText(ratingString);
-        mOverviewTextView.setText(currentMovie.getOverview());
-
-        recyclerViewReviews = findViewById(R.id.recycler_view_reviews);
-        recyclerViewReviews.setHasFixedSize(true);
-        recyclerViewReviews.setLayoutManager(new LinearLayoutManager(this));
-
-        recyclerViewTrailers = findViewById(R.id.recycler_view_trailers);
-        recyclerViewTrailers.setHasFixedSize(true);
-        recyclerViewTrailers.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
         reviews = new ArrayList<>();
         trailers = new ArrayList<>();
 
-        fab = findViewById(R.id.fab);
+        setupUI();
+        setupTrailers();
+        setupReviews();
 
         fab.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -131,8 +110,17 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         parseReviewsJSON(reviewsUrl);
         parseTrailersJSON(trailersUrl);
 
+        mDb = MovieRoomDatabase.getDatabase(getApplicationContext());
         mMovieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
         mFavoriteCheckBox = findViewById(R.id.favorite_checkbox);
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                final Movie movie = mDb.movieDao().checkMovie(currentMovie.getId());
+                setFavorite((movie != null) ? true : false);
+            }
+        });
 
         mFavoriteCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,12 +128,54 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
                 if (!isFavorite) {
                     isFavorite = true;
                     mMovieViewModel.insert(currentMovie);
+                    Snackbar.make(v, "Movie saved as favorite", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 } else {
                     isFavorite = false;
                     mMovieViewModel.delete(currentMovie);
+                    Snackbar.make(v, "Movie removed from favorite", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
             }
         });
+    }
+
+    private void setFavorite(boolean isFav) {
+        if (isFav) {
+            isFavorite = true;
+            mFavoriteCheckBox.setChecked(true);
+        } else {
+            isFavorite = false;
+            mFavoriteCheckBox.setChecked(false);
+        }
+    }
+
+    private void setupUI() {
+        mImageView = findViewById(R.id.image_view_detail);
+        mYearTextView = findViewById(R.id.year_text_view_detail);
+        mRatingTextView = findViewById(R.id.rating_text_view_detail);
+        mOverviewTextView = findViewById(R.id.overview_text_view_detail);
+        fab = findViewById(R.id.fab);
+
+        Picasso.get().load(currentMovie.getBackDropImageUrl()).fit().centerInside().into(mImageView);
+
+        this.setTitle(currentMovie.getTitle());
+        mYearTextView.setText(currentMovie.getReleaseDate());
+        String ratingString = currentMovie.getVoteAverage() + "/10";
+        mRatingTextView.setText(ratingString);
+        mOverviewTextView.setText(currentMovie.getOverview());
+    }
+
+    private void setupReviews() {
+        recyclerViewReviews = findViewById(R.id.recycler_view_reviews);
+        recyclerViewReviews.setHasFixedSize(true);
+        recyclerViewReviews.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private void setupTrailers() {
+        recyclerViewTrailers = findViewById(R.id.recycler_view_trailers);
+        recyclerViewTrailers.setHasFixedSize(true);
+        recyclerViewTrailers.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
     }
 
     private void parseReviewsJSON(String url) {

@@ -31,6 +31,10 @@ public class MovieRepository {
         new deleteAsyncTask(movieDao).execute(movie);
     }
 
+    public void check(Movie movie) {
+        new checkMovieAsyncTask(movieDao).execute(movie);
+    }
+
     private static class insertAsyncTask extends AsyncTask<Movie, Void, Void> {
 
         private MovieDao asyncTaskDao;
@@ -57,6 +61,20 @@ public class MovieRepository {
         @Override
         protected Void doInBackground(final Movie... movies) {
             asyncTaskDao.deleteMovie(movies[0]);
+            return null;
+        }
+    }
+
+    private static class checkMovieAsyncTask extends AsyncTask<Movie, Void, Void> {
+        private MovieDao asyncTaskDao;
+
+        checkMovieAsyncTask(MovieDao dao) {
+            asyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(Movie... movies) {
+            asyncTaskDao.checkMovie(movies[0].getId());
             return null;
         }
     }

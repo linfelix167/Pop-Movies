@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     private AutoFitGridLayoutManager layoutManager;
     private MovieViewModel mMovieViewModel;
 
+    private List<Movie> favMovies;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         mMovieList = new ArrayList<>();
+        favMovies = new ArrayList<>();
 
         mRequestQueue = Volley.newRequestQueue(this);
         parseJSON(MOVIE_DB_BASE_URL + POPULARITY + API_KEY);
@@ -124,15 +127,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     }
 
     private void retrieveFromDb() {
-        mMovieList.clear();
         mMovieViewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
-                mMovieList = movies;
-                mMovieAdapter.setFavoriteMovies(movies);
+                favMovies = movies;
+                mMovieAdapter.setFavoriteMovies(favMovies);
             }
         });
-        mMovieAdapter = new MovieAdapter(this, mMovieList);
+        mMovieAdapter = new MovieAdapter(this, favMovies);
         mRecyclerView.setAdapter(mMovieAdapter);
         mMovieAdapter.setOnItemClickListener(MainActivity.this);
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -157,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
                 case R.id.navigation_favorite:
                     mProgressBar.setVisibility(View.VISIBLE);
                     retrieveFromDb();
-                    mMovieAdapter.notifyDataSetChanged();
                     return true;
             }
             return false;
@@ -165,14 +166,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnIt
     };
 
     @Override
-    public void onItemClick(int position) {
+    public void onItemClick(Movie movie) {
         Intent intent = new Intent(this, MovieDetailActivity.class);
-        Movie movie = mMovieList.get(position);
-
         intent.putExtra(MOVIE, movie);
-
         startActivity(intent);
     }
-
-
 }
