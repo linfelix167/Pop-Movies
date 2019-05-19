@@ -1,4 +1,4 @@
-package com.felix.popmovies;
+package com.felix.popmovies.ui;
 
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;

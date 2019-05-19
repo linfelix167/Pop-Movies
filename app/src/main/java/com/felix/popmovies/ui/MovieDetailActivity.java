@@ -1,16 +1,13 @@
-package com.felix.popmovies;
+package com.felix.popmovies.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ShareCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +25,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.felix.popmovies.R;
 import com.felix.popmovies.adapter.ReviewsAdapter;
 import com.felix.popmovies.adapter.TrailersAdapter;
 import com.felix.popmovies.model.Movie;
@@ -43,10 +41,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import static com.felix.popmovies.MainActivity.MOVIE;
+import static com.felix.popmovies.ui.MainActivity.MOVIE;
 import static com.felix.popmovies.utilities.Constant.API_KEY;
 import static com.felix.popmovies.utilities.Constant.MOVIE_DB_BASE_URL;
-import static com.felix.popmovies.utilities.Constant.YOUTUBE_TUMBNAIL_URL;
 import static com.felix.popmovies.utilities.Constant.YOUTUBE_URL;
 
 public class MovieDetailActivity extends AppCompatActivity implements TrailersAdapter.OnItemClickListener {
@@ -68,6 +65,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private TextView mRatingTextView;
     private TextView mOverviewTextView;
     private FloatingActionButton fab;
+    private CheckBox mFavoriteCheckBox;
     private RecyclerView recyclerViewReviews;
     private RecyclerView recyclerViewTrailers;
     private ReviewsAdapter reviewsAdapter;
@@ -75,9 +73,10 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     private ArrayList<Review> reviews;
     private ArrayList<Trailer> trailers;
     private RequestQueue mRequestQueue;
+    private Movie currentMovie;
 
-    private MovieRoomDatabase mDb;
     private MovieViewModel mMovieViewModel;
+    private Boolean isFavorite = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,20 +87,20 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
 
         Intent intent = getIntent();
 
-        final Movie movie = intent.getParcelableExtra(MOVIE);
+        currentMovie = intent.getParcelableExtra(MOVIE);
 
         mImageView = findViewById(R.id.image_view_detail);
         mYearTextView = findViewById(R.id.year_text_view_detail);
         mRatingTextView = findViewById(R.id.rating_text_view_detail);
         mOverviewTextView = findViewById(R.id.overview_text_view_detail);
 
-        Picasso.get().load(movie.getBackDropImageUrl()).fit().centerInside().into(mImageView);
+        Picasso.get().load(currentMovie.getBackDropImageUrl()).fit().centerInside().into(mImageView);
 
-        this.setTitle(movie.getTitle());
-        mYearTextView.setText(movie.getReleaseDate() );
-        String ratingString = movie.getVoteAverage() + "/10";
+        this.setTitle(currentMovie.getTitle());
+        mYearTextView.setText(currentMovie.getReleaseDate());
+        String ratingString = currentMovie.getVoteAverage() + "/10";
         mRatingTextView.setText(ratingString);
-        mOverviewTextView.setText(movie.getOverview());
+        mOverviewTextView.setText(currentMovie.getOverview());
 
         recyclerViewReviews = findViewById(R.id.recycler_view_reviews);
         recyclerViewReviews.setHasFixedSize(true);
@@ -127,27 +126,24 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
 
         mRequestQueue = Volley.newRequestQueue(this);
 
-        String reviewsUrl = MOVIE_DB_BASE_URL + movie.getId() + "/" + REVIEWS + "?" + API_KEY;
-        String trailersUrl = MOVIE_DB_BASE_URL + movie.getId() + "/" + VIDEOS + "?" + API_KEY;
+        String reviewsUrl = MOVIE_DB_BASE_URL + currentMovie.getId() + "/" + REVIEWS + "?" + API_KEY;
+        String trailersUrl = MOVIE_DB_BASE_URL + currentMovie.getId() + "/" + VIDEOS + "?" + API_KEY;
         parseReviewsJSON(reviewsUrl);
         parseTrailersJSON(trailersUrl);
 
-        mDb = MovieRoomDatabase.getDatabase(getApplicationContext());
         mMovieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
-
-        final CheckBox mFavoriteCheckBox = findViewById(R.id.favorite_checkbox);
+        mFavoriteCheckBox = findViewById(R.id.favorite_checkbox);
 
         mFavoriteCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-//                Intent replayIntent = new Intent();
-//                replayIntent.putExtra(EXTRA_REPLY, movie);
-//                movie.setFavorite(true);
-//                setResult(RESULT_OK, replayIntent);
-//                Snackbar.make(v, "Movie saved as favorite", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-                mMovieViewModel.insert(movie);
-                movie.setFavorite(true);
+            public void onClick(final View v) {
+                if (!isFavorite) {
+                    isFavorite = true;
+                    mMovieViewModel.insert(currentMovie);
+                } else {
+                    isFavorite = false;
+                    mMovieViewModel.delete(currentMovie);
+                }
             }
         });
     }
@@ -228,7 +224,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
     @Override
     public void onItemClick(int position) {
         Trailer trailer = trailers.get(position);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://"+ trailer.getKey()));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + trailer.getKey()));
 
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
@@ -248,7 +244,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailersAd
         Trailer trailer = trailers.get(0);
         String shareMessage = "Hey! I have a new movie trailer want ot share with you!\n"
                 + "https://www.youtube.com/watch?v=" + trailer.getKey();
-        Intent shareIntent =ShareCompat.IntentBuilder.from(this)
+        Intent shareIntent = ShareCompat.IntentBuilder.from(this)
                 .setType("text/plain")
                 .setText(shareMessage)
                 .getIntent();
